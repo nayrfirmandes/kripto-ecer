@@ -10,6 +10,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
+from typing import Optional
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from prisma import Prisma
 
@@ -20,7 +21,7 @@ from bot.middlewares.database import DatabaseMiddleware
 from bot.middlewares.user_status import UserStatusMiddleware
 from bot.middlewares.logging import LoggingMiddleware
 from bot.webhook import handle_oxapay_webhook, health_check
-from bot.tasks.background_tasks import warm_coins_cache, refresh_coins_cache_worker, schedule_background_task
+from bot.tasks.background_tasks import warm_coins_cache, refresh_coins_cache_worker, database_keepalive_worker
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,6 +60,9 @@ def setup_dispatcher(prisma: Prisma) -> Dispatcher:
     return dp
 
 
+_prisma_instance: Optional[Prisma] = None
+
+
 async def on_startup(bot: Bot):
     webhook_url = f"https://{config.webhook_host}{WEBHOOK_PATH}"
     await bot.set_webhook(
@@ -71,8 +75,13 @@ async def on_startup(bot: Bot):
     # WARM COINS CACHE FOR INSTANT RESPONSES
     await warm_coins_cache()
     
-    # START BACKGROUND WORKER TO REFRESH CACHE (fire and forget)
+    # START BACKGROUND WORKERS (fire and forget)
     asyncio.create_task(refresh_coins_cache_worker())
+    
+    # DATABASE KEEPALIVE - ping every 60s to prevent NeonSQL idle disconnect
+    if _prisma_instance:
+        asyncio.create_task(database_keepalive_worker(_prisma_instance))
+        logger.info("Database keepalive worker started")
 
 
 async def on_shutdown(bot: Bot):
@@ -93,7 +102,9 @@ async def main():
         logger.error("WEBHOOK_HOST or REPLIT_DEV_DOMAIN is not set!")
         return
     
+    global _prisma_instance
     prisma = Prisma()
+    _prisma_instance = prisma
     
     try:
         await prisma.connect()

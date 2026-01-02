@@ -156,3 +156,32 @@ async def refresh_coins_cache_worker():
                 await oxapay.close()
         except Exception as e:
             logger.error(f"Error in coins cache refresh worker: {str(e)}")
+
+
+async def database_keepalive_worker(prisma: Prisma):
+    """
+    Ping database every 60 seconds to keep connection alive.
+    Prevents NeonSQL from closing idle connections.
+    """
+    while True:
+        try:
+            await asyncio.sleep(60)
+            
+            if prisma.is_connected():
+                await prisma.execute_raw("SELECT 1")
+                logger.debug("Database keepalive ping OK")
+            else:
+                logger.warning("Database not connected, reconnecting...")
+                await prisma.connect()
+                logger.info("Database reconnected via keepalive")
+        except Exception as e:
+            logger.warning(f"Database keepalive error: {e}, reconnecting...")
+            try:
+                await prisma.disconnect()
+            except Exception:
+                pass
+            try:
+                await prisma.connect()
+                logger.info("Database reconnected after keepalive error")
+            except Exception as re:
+                logger.error(f"Failed to reconnect database: {re}")
