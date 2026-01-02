@@ -18,10 +18,6 @@ author = "agent"
 task = "workflow.run"
 args = "CryptoBot"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "AdminPanel"
-
 [[workflows.workflow]]
 name = "CryptoBot"
 author = "agent"
@@ -33,18 +29,6 @@ outputType = "console"
 task = "shell.exec"
 args = "npx -y prisma@5.17.0 generate --schema=prisma/schema.prisma && python run_bot.py"
 waitForPort = 8080
-
-[[workflows.workflow]]
-name = "AdminPanel"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd admin && npm run dev -- -p 5000"
-waitForPort = 5000
 
 [[ports]]
 localPort = 5000

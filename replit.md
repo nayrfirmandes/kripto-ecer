@@ -85,8 +85,16 @@ prisma db push
 prisma studio
 ```
 
-## Admin Commands (Telegram)
-- `/admin` - Admin dashboard
+## Admin Panel (via Telegram)
+Admin panel diakses langsung dari Telegram dengan command `/admin`. Fitur:
+- Dashboard (stats users, pending transactions, volume)
+- Pending Topup (approve/reject dengan 1 klik)
+- Pending Withdraw (approve/reject dengan 1 klik)
+- Coin Settings (enable/disable network per coin)
+- Payment Methods (enable/disable)
+- Users list
+
+### Legacy Commands
 - `/pending_topup` - View pending top ups
 - `/pending_withdraw` - View pending withdrawals
 - `/approve_topup [id]` - Approve top up
@@ -95,10 +103,9 @@ prisma studio
 - `/reject_withdraw [id]` - Reject withdrawal
 
 ## Recent Changes
-- Fixed admin panel and bot database sync - both now use BOT_DATABASE (NeonSQL external)
+- Admin panel moved to Telegram (no separate web panel needed)
+- Interactive inline keyboard for admin actions
 - Fixed network names to match OxaPay API exactly (Ethereum, BSC, Tron, etc. instead of ERC20, BEP20, TRC20)
-- Admin panel prisma client now uses datasourceUrl: process.env.BOT_DATABASE
-- Coin settings cache TTL reduced to 10 seconds for faster sync
 - Network filtering: database controls which networks are active, OxaPay provides fees
 - Initial setup with all handlers
 - Prisma schema with all models
