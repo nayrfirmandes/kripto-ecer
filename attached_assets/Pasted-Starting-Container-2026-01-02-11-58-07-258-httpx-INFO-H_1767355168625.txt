@@ -1,0 +1,120 @@
+Starting Container
+2026-01-02 11:58:07,258 - httpx - INFO - HTTP Request: GET http://localhost:40097/status "HTTP/1.1 200 OK"
+2026-01-02 11:58:07,268 - __main__ - INFO - Telegram webhook path: /telegram/webhook
+2026-01-02 11:58:07,268 - __main__ - INFO - Starting Crypto Trading Bot in WEBHOOK mode...
+2026-01-02 11:58:07,259 - __main__ - INFO - Connected to database
+2026-01-02 11:58:07,268 - __main__ - INFO - Webhook host: crypto-ecer.up.railway.app
+2026-01-02 11:58:07,268 - __main__ - INFO - Admin IDs: [998181835]
+2026-01-02 11:58:07,917 - __main__ - INFO - Webhook set to: https://crypto-ecer.up.railway.app/telegram/webhook
+2026-01-02 11:58:08,806 - bot.tasks.background_tasks - INFO - Coins cache warmed: 6 coins loaded
+2026-01-02 11:58:08,807 - __main__ - INFO - Bot webhook server running on 0.0.0.0:8080
+2026-01-02 11:58:14,402 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:14 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:14,403 - bot.middlewares.logging - INFO - [Message] user_id=8267860597 text='/start'
+2026-01-02 11:58:14,461 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:14,471 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:14,843 - aiogram.event - INFO - Update id=774901011 is handled. Duration 440 ms by bot id=7981158644
+2026-01-02 11:58:22,987 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:22 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:22,989 - bot.middlewares.logging - INFO - [Message] user_id=8267860597 text='/admin'
+2026-01-02 11:58:22,990 - aiogram.event - INFO - Update id=774901012 is handled. Duration 2 ms by bot id=7981158644
+2026-01-02 11:58:35,249 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:35 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:35,249 - bot.middlewares.logging - INFO - [Message] user_id=998181835 text='/start'
+2026-01-02 11:58:35,263 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:35,272 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:35,946 - aiogram.event - INFO - Update id=774901013 is handled. Duration 697 ms by bot id=7981158644
+2026-01-02 11:58:39,609 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:39 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:39,612 - bot.middlewares.logging - INFO - [Message] user_id=998181835 text='/admin'
+2026-01-02 11:58:39,959 - aiogram.event - INFO - Update id=774901014 is handled. Duration 349 ms by bot id=7981158644
+2026-01-02 11:58:43,209 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:43 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:43,217 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:users'
+2026-01-02 11:58:43,240 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:43,958 - aiogram.event - INFO - Update id=774901015 is handled. Duration 747 ms by bot id=7981158644
+2026-01-02 11:58:49,410 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:49 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:49,417 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:menu'
+2026-01-02 11:58:50,101 - aiogram.event - INFO - Update id=774901016 is handled. Duration 690 ms by bot id=7981158644
+2026-01-02 11:58:50,905 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:50 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:50,913 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:pending_topup'
+2026-01-02 11:58:50,941 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:51,631 - aiogram.event - INFO - Update id=774901017 is handled. Duration 724 ms by bot id=7981158644
+2026-01-02 11:58:52,133 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:52 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:52,137 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:menu'
+2026-01-02 11:58:52,810 - aiogram.event - INFO - Update id=774901018 is handled. Duration 676 ms by bot id=7981158644
+2026-01-02 11:58:53,206 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:53 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:53,212 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:pending_withdraw'
+2026-01-02 11:58:53,222 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:53,896 - aiogram.event - INFO - Update id=774901019 is handled. Duration 689 ms by bot id=7981158644
+2026-01-02 11:58:54,231 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:54 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:54,236 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:menu'
+2026-01-02 11:58:54,912 - aiogram.event - INFO - Update id=774901020 is handled. Duration 680 ms by bot id=7981158644
+2026-01-02 11:58:55,269 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:55 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:55,282 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:payments'
+2026-01-02 11:58:55,296 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:58:55,975 - aiogram.event - INFO - Update id=774901021 is handled. Duration 705 ms by bot id=7981158644
+2026-01-02 11:58:59,921 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:58:59 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:58:59,930 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:menu'
+2026-01-02 11:59:00,604 - aiogram.event - INFO - Update id=774901022 is handled. Duration 683 ms by bot id=7981158644
+2026-01-02 11:59:01,159 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:59:01 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:59:01,166 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:coins'
+2026-01-02 11:59:01,183 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:59:01,901 - aiogram.event - INFO - Update id=774901023 is handled. Duration 741 ms by bot id=7981158644
+2026-01-02 11:59:07,209 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:59:07 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:59:07,218 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:menu'
+2026-01-02 11:59:07,232 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:59:07,909 - aiogram.event - INFO - Update id=774901024 is handled. Duration 699 ms by bot id=7981158644
+2026-01-02 11:59:08,505 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:59:08 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:59:08,511 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:users'
+2026-01-02 11:59:08,520 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:59:09,195 - aiogram.event - INFO - Update id=774901025 is handled. Duration 689 ms by bot id=7981158644
+2026-01-02 11:59:09,644 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:59:09 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:59:09,650 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:menu'
+2026-01-02 11:59:10,320 - aiogram.event - INFO - Update id=774901026 is handled. Duration 675 ms by bot id=7981158644
+2026-01-02 11:59:10,828 - aiohttp.access - INFO - 100.64.0.2 [02/Jan/2026:11:59:10 +0000] "POST /telegram/webhook HTTP/1.1" 200 161 "-" "-"
+2026-01-02 11:59:10,836 - bot.middlewares.logging - INFO - [CallbackQuery] user_id=998181835 data='admin:dashboard'
+2026-01-02 11:59:10,851 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:59:10,858 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:59:10,867 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:59:10,875 - bot.middlewares.logging - ERROR - [CallbackQuery] Error for user_id=998181835: 'DepositActions' object has no attribute 'aggregate'
+2026-01-02 11:59:10,874 - httpx - INFO - HTTP Request: POST http://localhost:40097/ "HTTP/1.1 200 OK"
+2026-01-02 11:59:10,876 - aiogram.event - INFO - Update id=774901027 is not handled. Duration 47 ms by bot id=7981158644
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 56, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 42, in __call__
+2026-01-02 11:59:10,876 - aiogram.event - ERROR - Cause exception while process update id=774901027 by bot id=7981158644
+AttributeError: 'DepositActions' object has no attribute 'aggregate'
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 368, in _feed_webhook_update
+    return await self.feed_update(bot, update, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+    return await handler(event, data)
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 146, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 141, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 174, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 146, in propagate_event
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 141, in _wrapped

@@ -73,17 +73,11 @@ async def admin_dashboard(callback: CallbackQuery, db: Prisma, **kwargs):
     total_users = await db.user.count()
     active_users = await db.user.count(where={"status": "ACTIVE"})
     
-    total_deposits = await db.deposit.aggregate(
-        where={"status": "COMPLETED"},
-        _sum={"amount": True}
-    )
-    total_withdrawals = await db.withdrawal.aggregate(
-        where={"status": "COMPLETED"},
-        _sum={"amount": True}
-    )
+    completed_deposits = await db.deposit.find_many(where={"status": "COMPLETED"})
+    completed_withdrawals = await db.withdrawal.find_many(where={"status": "COMPLETED"})
     
-    dep_sum = total_deposits.get("_sum", {}).get("amount") or 0
-    wit_sum = total_withdrawals.get("_sum", {}).get("amount") or 0
+    dep_sum = sum(d.amount for d in completed_deposits)
+    wit_sum = sum(w.amount for w in completed_withdrawals)
     
     await callback.message.edit_text(
         f"<b>Dashboard</b>\n\n"
