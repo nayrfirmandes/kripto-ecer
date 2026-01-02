@@ -44,7 +44,8 @@ def load_config() -> AppConfig:
     admin_ids = [int(id.strip()) for id in admin_ids_str.split(",") if id.strip()]
     
     replit_domain = os.getenv("REPLIT_DEV_DOMAIN", "")
-    webhook_host = os.getenv("WEBHOOK_HOST", replit_domain)
+    railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "")
+    webhook_host = os.getenv("WEBHOOK_HOST", "") or railway_domain or replit_domain
     
     return AppConfig(
         bot=BotConfig(
