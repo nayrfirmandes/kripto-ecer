@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd admin && npm run build && npx prisma@5.22.0 generate --schema=./prisma/schema.prisma",
+  "outputDirectory": "admin/.next",
+  "framework": "nextjs",
+  "env": {
+    "DATABASE_URL": "@DATABASE_URL"
+  }
+}

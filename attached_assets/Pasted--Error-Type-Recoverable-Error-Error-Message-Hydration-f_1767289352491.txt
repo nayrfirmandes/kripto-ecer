@@ -1,0 +1,62 @@
+## Error Type
+Recoverable Error
+
+## Error Message
+Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <RedirectErrorBoundary router={{...}}>
+      <InnerLayoutRouter url="/settings" tree={[...]} params={{}} cacheNode={{rsc:<Fragment>, ...}} segmentPath={[...]} ...>
+        <SegmentViewNode type="page" pagePath="(admin)/se...">
+          <SegmentTrieNode>
+          <SettingsPage>
+            <div className="space-y-4 ...">
+              <h1>
+              <div className="grid gap-4...">
+                <div>
+                <div>
+                <Card>
+                  <div data-slot="card" className="bg-card te...">
+                    <div>
+                    <CardContent>
+                      <div data-slot="card-content" className="p-4 md:p-6...">
+                        ...
+                          <div className="md:hidden ...">
+                            <div className="py-3 trans...">
+                              <div>
+                              <div className="text-xs te...">
++                               0322236059
+-                               <a href="tel:0322236059">
+                                ...
+                              ...
+                            ...
+        ...
+      ...
+
+
+
+    at div (unknown:0:0)
+    at <unknown> (src/app/(admin)/settings/payment-methods-form.tsx:172:13)
+    at map ([native code]:null:null)
+    at PaymentMethodsForm (src/app/(admin)/settings/payment-methods-form.tsx:161:21)
+
+## Code Frame
+  170 |               </Badge>
+  171 |             </div>
+> 172 |             <div className="text-xs text-muted-foreground mb-2">
+      |             ^
+  173 |               {method.accountNo} - {method.accountName}
+  174 |             </div>
+  175 |             <div className="flex gap-2">
+
+Next.js version: 16.1.1 (Turbopack)
