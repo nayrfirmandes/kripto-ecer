@@ -22,6 +22,7 @@ wheels/
 .venv/
 venv/
 ENV/
+.pythonlibs/
 
 # Node.js
 node_modules/
@@ -44,11 +45,22 @@ out/
 # Prisma
 prisma/*.db
 prisma/*.db-journal
+prisma_client/
 
 # Logs
 *.log
 logs/
+/tmp/
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Replit
+.local/
+.config/
+.upm/
+.replit
+replit.nix
+.breakpoints
+.replit.nix
