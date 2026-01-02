@@ -7,7 +7,7 @@ Telegram bot untuk jual beli cryptocurrency dengan sistem saldo internal. Bot in
 - **Bot**: Python 3.11 + Aiogram 3.x
 - **Database**: PostgreSQL (NeonSQL)
 - **ORM**: Prisma
-- **Admin Panel**: Next.js (planned)
+- **Admin Panel**: Telegram inline keyboard (built-in)
 
 ## Project Structure
 ```
@@ -45,17 +45,22 @@ bot/
 prisma/
 └── schema.prisma        # Database schema
 
-admin-panel/             # Next.js admin (planned)
+pyrightconfig.json       # Pyright type checking config
 ```
 
 ## Environment Variables
 Required secrets:
 - `TELEGRAM_BOT_TOKEN` - Bot token from @BotFather
-- `DATABASE_URL` - NeonSQL connection string
-- `OXAPAY_API_KEY` - OxaPay API key
-- `OXAPAY_MERCHANT_ID` - OxaPay merchant ID
+- `BOT_DATABASE` - NeonSQL connection string
+- `OXAPAY_MERCHANT_API_KEY` - OxaPay merchant API key
+- `OXAPAY_PAYOUT_API_KEY` - OxaPay payout API key
 - `OXAPAY_WEBHOOK_SECRET` - Webhook verification secret
 - `ADMIN_TELEGRAM_IDS` - Comma-separated admin Telegram IDs
+
+Optional config (via environment variables):
+- `BOT_USERNAME` - Bot username without @ (default: kriptoecerbot)
+- `USD_TO_IDR` - USD to IDR exchange rate (default: 16000)
+- `WEBHOOK_HOST` - Webhook host domain
 
 ## Features
 - User registration with email, WhatsApp, location
@@ -103,14 +108,14 @@ Admin panel diakses langsung dari Telegram dengan command `/admin`. Fitur:
 - `/reject_withdraw [id]` - Reject withdrawal
 
 ## Recent Changes
+- **2026-01-02**: Cleaned up all hardcoded values to config.py (bot username, USD_TO_IDR rate)
+- **2026-01-02**: Added pyright configuration to suppress Prisma type errors
+- **2026-01-02**: Improved admin panel layout - cleaner, more informative with pending counts
+- **2026-01-02**: Admin button only appears for users with matching admin IDs
 - Admin panel moved to Telegram (no separate web panel needed)
 - Interactive inline keyboard for admin actions
 - Fixed network names to match OxaPay API exactly (Ethereum, BSC, Tron, etc. instead of ERC20, BEP20, TRC20)
 - Network filtering: database controls which networks are active, OxaPay provides fees
-- Initial setup with all handlers
-- Prisma schema with all models
-- OxaPay integration for payments
-- Webhook endpoint for crypto confirmations
 
 ## Network Names (OxaPay Standard)
 - BTC: Bitcoin

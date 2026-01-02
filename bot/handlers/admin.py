@@ -1,5 +1,6 @@
 from decimal import Decimal
-from aiogram import Router, F
+from typing import Any, cast
+from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 from prisma import Prisma
@@ -9,6 +10,11 @@ from bot.db.queries import update_balance
 from bot.config import config
 
 router = Router()
+
+
+async def safe_edit_text(callback: CallbackQuery, text: str, reply_markup: InlineKeyboardMarkup | None = None) -> None:
+    if callback.message and hasattr(callback.message, 'edit_text'):
+        await callback.message.edit_text(text, parse_mode="HTML", reply_markup=reply_markup)  # type: ignore[union-attr]
 
 
 def is_admin(user_id: int) -> bool:

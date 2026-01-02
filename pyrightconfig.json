@@ -1,0 +1,19 @@
+{
+  "include": ["bot"],
+  "exclude": [
+    "**/__pycache__",
+    "**/node_modules",
+    ".pythonlibs/**",
+    "**/prisma/**"
+  ],
+  "typeCheckingMode": "basic",
+  "reportMissingTypeStubs": false,
+  "reportUnknownMemberType": false,
+  "reportUnknownParameterType": false,
+  "reportUnknownArgumentType": false,
+  "reportUnknownVariableType": false,
+  "reportOptionalMemberAccess": false,
+  "reportOptionalSubscript": false,
+  "reportPrivateUsage": false,
+  "pythonVersion": "3.11"
+}

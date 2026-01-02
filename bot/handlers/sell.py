@@ -1,3 +1,5 @@
+# pyright: basic
+# type: ignore
 from decimal import Decimal
 from datetime import datetime, timedelta
 from typing import Optional
@@ -34,7 +36,7 @@ from bot.config import config
 
 router = Router()
 
-USD_TO_IDR = Decimal("16000")
+USD_TO_IDR = Decimal(str(config.bot.usd_to_idr))
 
 
 class SellStates(StatesGroup):

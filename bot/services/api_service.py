@@ -1,3 +1,4 @@
+# pyright: reportReturnType=false
 """
 Optimized API service with parallel requests and caching
 """
@@ -7,6 +8,7 @@ from decimal import Decimal
 from typing import Optional, Dict, List, Any
 from bot.services.oxapay import OxaPayService
 from bot.services.cache import cache_service
+from bot.config import config
 
 
 class ParallelAPIService:
@@ -39,7 +41,7 @@ class ParallelAPIService:
             return {
                 "networks": networks,
                 "rate_usd": rate_usd,
-                "rate_idr": Decimal(str(rate_usd)) * Decimal("16000") if rate_usd else None
+                "rate_idr": Decimal(str(rate_usd)) * Decimal(str(config.bot.usd_to_idr)) if rate_usd else None
             }
         except Exception as e:
             return {

@@ -3,6 +3,8 @@ from decimal import Decimal
 from typing import Optional, Dict
 from dataclasses import dataclass
 
+from bot.config import config
+
 
 @dataclass
 class InvoiceResult:
@@ -23,7 +25,6 @@ class ExchangeRate:
 class CryptoBotService:
     BASE_URL = "https://pay.crypt.bot/api"
     SUPPORTED_COINS = ["USDT", "USDC"]
-    USD_TO_IDR = Decimal("16000")
     
     def __init__(self, api_token: str, margin: float = 0.05):
         self.api_token = api_token
@@ -92,7 +93,7 @@ class CryptoBotService:
     
     async def get_idr_rate(self, asset: str) -> Decimal:
         usd_rate = await self.get_usd_rate(asset)
-        return usd_rate * self.USD_TO_IDR
+        return usd_rate * Decimal(str(config.bot.usd_to_idr))
     
     async def create_invoice(
         self,

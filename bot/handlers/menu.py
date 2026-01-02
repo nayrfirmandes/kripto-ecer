@@ -13,7 +13,7 @@ from bot.config import config
 
 router = Router()
 
-USD_TO_IDR = Decimal("16000")
+USD_TO_IDR = Decimal(str(config.bot.usd_to_idr))
 
 
 @router.callback_query(F.data == CallbackData.MENU_RATES)

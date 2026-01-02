@@ -7,6 +7,8 @@ from typing import Optional
 class BotConfig:
     token: str
     admin_ids: list[int]
+    username: str
+    usd_to_idr: float
 
 
 @dataclass
@@ -51,6 +53,8 @@ def load_config() -> AppConfig:
         bot=BotConfig(
             token=os.getenv("TELEGRAM_BOT_TOKEN", ""),
             admin_ids=admin_ids,
+            username=os.getenv("BOT_USERNAME", "kriptoecerbot"),
+            usd_to_idr=float(os.getenv("USD_TO_IDR", "16000")),
         ),
         database=DatabaseConfig(
             url=os.getenv("BOT_DATABASE", ""),

@@ -301,7 +301,10 @@ def get_settings_keyboard(has_pin: bool = False) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_referral_keyboard(ref_code: str, bot_username: str = "kriptoecerbot") -> InlineKeyboardMarkup:
+def get_referral_keyboard(ref_code: str, bot_username: str = "") -> InlineKeyboardMarkup:
+    if not bot_username:
+        from bot.config import config
+        bot_username = config.bot.username
     ref_link = f"https://t.me/{bot_username}?start={ref_code}"
     share_text = f"Yuk trading crypto bareng aku di @{bot_username}! Daftar pakai link ini: {ref_link}"
     share_url = f"https://t.me/share/url?url={ref_link}&text={share_text}"

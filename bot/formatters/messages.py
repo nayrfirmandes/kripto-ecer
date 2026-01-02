@@ -94,7 +94,8 @@ Dengan menggunakan layanan ini, Anda menyetujui:
 {warning} Pastikan Anda memahami risiko trading crypto.""".format(warning=Emoji.WARNING)
 
 
-def format_main_menu(balance: Decimal, name: str, telegram_id: int) -> str:
+def format_main_menu(balance: Decimal | int, name: str, telegram_id: int) -> str:
+    from bot.config import config
     greeting = get_wib_greeting()
     quote = get_quote()
     
@@ -105,12 +106,13 @@ def format_main_menu(balance: Decimal, name: str, telegram_id: int) -> str:
 
 <i>{quote}</i>
 
-<i>⚠️ Pastikan menggunakan bot official @kriptoecerbot</i>""".format(
+<i>⚠️ Pastikan menggunakan bot official @{bot_username}</i>""".format(
         greeting=greeting,
         name=name,
         telegram_id=telegram_id,
         balance=format_currency(balance),
-        quote=quote
+        quote=quote,
+        bot_username=config.bot.username
     )
 
 
@@ -391,7 +393,10 @@ def format_history_item(
     return f"{status_symbol} {tx_type}{coin_str}: {format_currency(amount)} - {created_at}"
 
 
-def format_referral_info(code: str, count: int, bonus_earned: Decimal, bot_username: str = "kriptoecerbot") -> str:
+def format_referral_info(code: str, count: int, bonus_earned: Decimal, bot_username: str = "") -> str:
+    if not bot_username:
+        from bot.config import config
+        bot_username = config.bot.username
     ref_link = f"https://t.me/{bot_username}?start={code}"
     return """{gift} <b>Program Referral Anda</b>
 
@@ -417,14 +422,14 @@ Dapatkan bonus setiap ada yang mendaftar!""".format(
 
 def format_profile(
     telegram_id: int,
-    username: str,
-    first_name: str,
-    email: str,
-    whatsapp: str,
+    username: Optional[str],
+    first_name: Optional[str],
+    email: Optional[str],
+    whatsapp: Optional[str],
     status: str,
     referral_code: str,
     created_at,
-    balance: Decimal
+    balance: Decimal | int
 ) -> str:
     status_text = {
         "ACTIVE": f"{Emoji.CHECK} Aktif",

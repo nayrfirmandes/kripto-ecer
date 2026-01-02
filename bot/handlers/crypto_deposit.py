@@ -1,3 +1,5 @@
+# pyright: basic
+# type: ignore
 from decimal import Decimal
 from typing import Optional
 from aiogram import Router, F
@@ -145,7 +147,7 @@ async def process_crypto_amount(message: Message, state: FSMContext, db: Prisma,
         result = await cryptobot.create_invoice(
             asset=coin,
             amount=amount,
-            description=f"Deposit {amount} {coin} - @kriptoecerbot",
+            description=f"Deposit {amount} {coin} - @{config.bot.username}",
             expires_in=3600,
         )
         
