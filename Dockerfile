@@ -8,7 +8,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY prisma ./prisma
 COPY bot ./bot
 COPY run_bot.py .
-COPY .env .env
 
 # Generate Prisma Python client
 RUN prisma generate --schema=prisma/schema.prisma
