@@ -73,7 +73,7 @@ def get_remove_keyboard() -> ReplyKeyboardRemove:
     return ReplyKeyboardRemove()
 
 
-def get_main_menu_keyboard() -> InlineKeyboardMarkup:
+def get_main_menu_keyboard(is_admin: bool = False) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(text="👛  Beli Crypto", callback_data=CallbackData.MENU_BUY),
@@ -99,6 +99,10 @@ def get_main_menu_keyboard() -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="📦  Stock Crypto", callback_data=CallbackData.MENU_STOCK),
         InlineKeyboardButton(text="❓  Bantuan", callback_data=CallbackData.MENU_HELP),
     )
+    if is_admin:
+        builder.row(
+            InlineKeyboardButton(text="🔐 Admin Panel", callback_data="admin:menu"),
+        )
     return builder.as_markup()
 
 

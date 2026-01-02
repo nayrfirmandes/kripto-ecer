@@ -8,8 +8,13 @@ from typing import Optional
 from bot.formatters.messages import format_welcome, format_terms, format_main_menu
 from bot.keyboards.inline import get_terms_keyboard, get_main_menu_keyboard, CallbackData
 from bot.db.queries import get_user_by_telegram_id
+from bot.config import config
 
 router = Router()
+
+
+def is_admin(user_id: int) -> bool:
+    return user_id in config.bot.admin_ids
 
 
 @router.message(CommandStart())
@@ -62,7 +67,7 @@ async def cmd_start(message: Message, state: FSMContext, db: Prisma, user: Optio
         
         await message.answer(
             format_main_menu(balance, name, message.from_user.id),
-            reply_markup=get_main_menu_keyboard(),
+            reply_markup=get_main_menu_keyboard(is_admin=is_admin(message.from_user.id)),
             parse_mode="HTML"
         )
     else:
@@ -102,7 +107,7 @@ async def back_to_menu(callback: CallbackQuery, state: FSMContext, db: Prisma, u
     
     await callback.message.edit_text(
         format_main_menu(balance, name, callback.from_user.id),
-        reply_markup=get_main_menu_keyboard(),
+        reply_markup=get_main_menu_keyboard(is_admin=is_admin(callback.from_user.id)),
         parse_mode="HTML"
     )
     await callback.answer()
@@ -142,7 +147,7 @@ async def cancel_and_show_menu(callback: CallbackQuery, state: FSMContext, db: P
     
     await callback.message.answer(
         format_main_menu(balance, name, callback.from_user.id),
-        reply_markup=get_main_menu_keyboard(),
+        reply_markup=get_main_menu_keyboard(is_admin=is_admin(callback.from_user.id)),
         parse_mode="HTML"
     )
     await callback.answer()

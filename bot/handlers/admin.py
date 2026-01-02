@@ -15,21 +15,27 @@ def is_admin(user_id: int) -> bool:
     return user_id in config.bot.admin_ids
 
 
-def admin_menu_keyboard() -> InlineKeyboardMarkup:
+def admin_menu_keyboard(pending_topup: int = 0, pending_withdraw: int = 0) -> InlineKeyboardMarkup:
+    topup_text = f"📥 Topup ({pending_topup})" if pending_topup > 0 else "📥 Topup"
+    withdraw_text = f"📤 Withdraw ({pending_withdraw})" if pending_withdraw > 0 else "📤 Withdraw"
+    
     return InlineKeyboardMarkup(inline_keyboard=[
         [
-            InlineKeyboardButton(text="Dashboard", callback_data="admin:dashboard"),
+            InlineKeyboardButton(text="📊 Dashboard", callback_data="admin:dashboard"),
         ],
         [
-            InlineKeyboardButton(text="Pending Topup", callback_data="admin:pending_topup"),
-            InlineKeyboardButton(text="Pending Withdraw", callback_data="admin:pending_withdraw"),
+            InlineKeyboardButton(text=topup_text, callback_data="admin:pending_topup"),
+            InlineKeyboardButton(text=withdraw_text, callback_data="admin:pending_withdraw"),
         ],
         [
-            InlineKeyboardButton(text="Coin Settings", callback_data="admin:coins"),
-            InlineKeyboardButton(text="Payment Methods", callback_data="admin:payments"),
+            InlineKeyboardButton(text="🪙 Coins", callback_data="admin:coins"),
+            InlineKeyboardButton(text="💳 Payments", callback_data="admin:payments"),
         ],
         [
-            InlineKeyboardButton(text="All Users", callback_data="admin:users"),
+            InlineKeyboardButton(text="👥 Users", callback_data="admin:users"),
+        ],
+        [
+            InlineKeyboardButton(text="← Menu Utama", callback_data="back:menu"),
         ],
     ])
 
@@ -39,11 +45,20 @@ async def admin_menu(message: Message, db: Prisma, **kwargs):
     if not is_admin(message.from_user.id):
         return
     
+    pending_topup = await db.deposit.count(where={"status": "PENDING"})
+    pending_withdraw = await db.withdrawal.count(where={"status": "PENDING"})
+    total_users = await db.user.count()
+    
     await message.answer(
-        f"<b>Admin Panel</b>\n\n"
+        f"🔐 <b>ADMIN PANEL</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"👥 Total Users: <b>{total_users}</b>\n"
+        f"📥 Pending Topup: <b>{pending_topup}</b>\n"
+        f"📤 Pending Withdraw: <b>{pending_withdraw}</b>\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
         f"Pilih menu di bawah:",
         parse_mode="HTML",
-        reply_markup=admin_menu_keyboard()
+        reply_markup=admin_menu_keyboard(pending_topup, pending_withdraw)
     )
 
 
@@ -53,11 +68,20 @@ async def admin_menu_callback(callback: CallbackQuery, db: Prisma, **kwargs):
         await callback.answer("Unauthorized", show_alert=True)
         return
     
+    pending_topup = await db.deposit.count(where={"status": "PENDING"})
+    pending_withdraw = await db.withdrawal.count(where={"status": "PENDING"})
+    total_users = await db.user.count()
+    
     await callback.message.edit_text(
-        f"<b>Admin Panel</b>\n\n"
+        f"🔐 <b>ADMIN PANEL</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"👥 Total Users: <b>{total_users}</b>\n"
+        f"📥 Pending Topup: <b>{pending_topup}</b>\n"
+        f"📤 Pending Withdraw: <b>{pending_withdraw}</b>\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
         f"Pilih menu di bawah:",
         parse_mode="HTML",
-        reply_markup=admin_menu_keyboard()
+        reply_markup=admin_menu_keyboard(pending_topup, pending_withdraw)
     )
     await callback.answer()
 
@@ -80,19 +104,22 @@ async def admin_dashboard(callback: CallbackQuery, db: Prisma, **kwargs):
     wit_sum = sum(w.amount for w in completed_withdrawals)
     
     await callback.message.edit_text(
-        f"<b>Dashboard</b>\n\n"
-        f"<b>Users</b>\n"
-        f"{Emoji.DOT} Total: {total_users}\n"
-        f"{Emoji.DOT} Active: {active_users}\n\n"
-        f"<b>Pending</b>\n"
-        f"{Emoji.DOT} Topup: {pending_deposits}\n"
-        f"{Emoji.DOT} Withdraw: {pending_withdrawals}\n\n"
-        f"<b>Total Volume</b>\n"
-        f"{Emoji.DOT} Deposits: Rp {dep_sum:,.0f}\n"
-        f"{Emoji.DOT} Withdrawals: Rp {wit_sum:,.0f}",
+        f"📊 <b>DASHBOARD</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"<b>👥 USERS</b>\n"
+        f"   Total     : <b>{total_users:,}</b>\n"
+        f"   Active    : <b>{active_users:,}</b>\n\n"
+        f"<b>⏳ PENDING</b>\n"
+        f"   Topup     : <b>{pending_deposits}</b>\n"
+        f"   Withdraw  : <b>{pending_withdrawals}</b>\n\n"
+        f"<b>💰 TOTAL VOLUME</b>\n"
+        f"   Deposits  : <b>Rp {dep_sum:,.0f}</b>\n"
+        f"   Withdraws : <b>Rp {wit_sum:,.0f}</b>\n\n"
+        f"━━━━━━━━━━━━━━━━━━━━",
         parse_mode="HTML",
         reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="Back", callback_data="admin:menu")]
+            [InlineKeyboardButton(text="🔄 Refresh", callback_data="admin:dashboard")],
+            [InlineKeyboardButton(text="← Back", callback_data="admin:menu")]
         ])
     )
     await callback.answer()
