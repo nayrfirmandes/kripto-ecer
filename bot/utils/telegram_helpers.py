@@ -16,14 +16,15 @@ async def safe_edit_text(
     Safely edit callback message text.
     Returns True if successful, False otherwise.
     """
-    if callback.message is None:
+    msg = callback.message
+    if msg is None:
         return False
     
-    if not hasattr(callback.message, 'edit_text'):
+    if not isinstance(msg, Message):
         return False
     
     try:
-        await callback.message.edit_text(
+        await msg.edit_text(
             text,
             reply_markup=reply_markup,
             parse_mode=parse_mode
@@ -38,14 +39,15 @@ async def safe_delete_message(callback: CallbackQuery) -> bool:
     Safely delete callback message.
     Returns True if successful, False otherwise.
     """
-    if callback.message is None:
+    msg = callback.message
+    if msg is None:
         return False
     
-    if not hasattr(callback.message, 'delete'):
+    if not isinstance(msg, Message):
         return False
     
     try:
-        await callback.message.delete()
+        await msg.delete()
         return True
     except Exception:
         return False

@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from prisma import Prisma
 
 from bot.formatters.messages import Emoji, format_wib_datetime
@@ -18,7 +18,10 @@ async def show_history(callback: CallbackQuery, db: Prisma, **kwargs):
 
 @router.callback_query(F.data.startswith("history:page:"))
 async def show_history_page_callback(callback: CallbackQuery, db: Prisma, **kwargs):
-    page = int(callback.data.split(":")[-1])
+    data = callback.data
+    if data is None:
+        return
+    page = int(data.split(":")[-1])
     await show_history_page(callback, db, page=page)
 
 
@@ -40,8 +43,13 @@ async def show_history_page(callback: CallbackQuery, db: Prisma, page: int = 1):
     offset = (page - 1) * ITEMS_PER_PAGE
     transactions = await get_user_transactions(db, user.id, limit=ITEMS_PER_PAGE, offset=offset)
     
+    msg = callback.message
+    if not isinstance(msg, Message):
+        await callback.answer()
+        return
+    
     if not transactions:
-        await callback.message.edit_text(
+        await msg.edit_text(
             f"{Emoji.CLOCK} <b>Riwayat Transaksi Anda</b>\n\nAnda belum memiliki riwayat transaksi.",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -75,7 +83,7 @@ async def show_history_page(callback: CallbackQuery, db: Prisma, page: int = 1):
     
     history_text += f"\n<i>Menampilkan halaman {page} dari {total_pages}</i>"
     
-    await callback.message.edit_text(
+    await msg.edit_text(
         history_text,
         reply_markup=get_history_pagination_keyboard(page, total_pages),
         parse_mode="HTML"

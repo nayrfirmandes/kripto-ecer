@@ -8,6 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from prisma import Prisma
 from prisma.models import User
+from prisma.enums import OrderType, OrderStatus
 
 from bot.formatters.messages import (
     format_buy_menu,
@@ -316,7 +317,7 @@ async def confirm_buy(
         create_crypto_order(
             db=db,
             user_id=user.id,
-            order_type="BUY",
+            order_type=OrderType.BUY,
             coin_symbol=state_data["coin"],
             network=state_data["network"],
             crypto_amount=Decimal(str(state_data["crypto_amount"])),
@@ -333,7 +334,7 @@ async def confirm_buy(
     async def update_order_status() -> None:
         await db.cryptoorder.update(
             where={"id": order.id},
-            data={"status": "PROCESSING"}
+            data={"status": OrderStatus.PROCESSING}
         )
     
     await state.clear()
@@ -348,7 +349,7 @@ async def confirm_buy(
     )
     await callback.answer()
     
-    schedule_background_task(asyncio.gather(
+    await schedule_background_task(asyncio.gather(
         update_order_status(),
         process_payout_async(
             db=db,

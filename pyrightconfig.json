@@ -3,17 +3,10 @@
   "exclude": [
     "**/__pycache__",
     "**/node_modules",
-    ".pythonlibs/**",
-    "**/prisma/**"
+    ".pythonlibs/**"
   ],
-  "typeCheckingMode": "basic",
+  "typeCheckingMode": "standard",
   "reportMissingTypeStubs": false,
-  "reportUnknownMemberType": false,
-  "reportUnknownParameterType": false,
-  "reportUnknownArgumentType": false,
-  "reportUnknownVariableType": false,
-  "reportOptionalMemberAccess": false,
-  "reportOptionalSubscript": false,
   "reportPrivateUsage": false,
   "pythonVersion": "3.11"
 }

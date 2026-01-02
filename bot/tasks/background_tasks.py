@@ -9,6 +9,7 @@ from decimal import Decimal
 from typing import Optional
 from datetime import datetime, timedelta
 from prisma import Prisma, Json
+from prisma.enums import OrderStatus, TransactionStatus, TransactionType
 from bot.services.oxapay import OxaPayService
 from bot.db.queries import update_balance
 from bot.config import config
@@ -53,7 +54,7 @@ async def process_payout_async(
                 await db.cryptoorder.update(
                     where={"id": order_id},
                     data={
-                        "status": "COMPLETED",
+                        "status": OrderStatus.COMPLETED,
                         "oxapayPayoutId": result.payout_id,
                         "txHash": result.tx_hash,
                     }
@@ -63,9 +64,9 @@ async def process_payout_async(
                 await db.transaction.create(
                     data={
                         "userId": user_id,
-                        "type": "BUY",
+                        "type": TransactionType.BUY,
                         "amount": total_idr,
-                        "status": "COMPLETED",
+                        "status": TransactionStatus.COMPLETED,
                         "description": f"Beli {amount:.8f} {coin}",
                         "metadata": Json({"orderId": order_id}),
                     }
@@ -77,7 +78,7 @@ async def process_payout_async(
                 await update_balance(db, user_id, total_idr)
                 await db.cryptoorder.update(
                     where={"id": order_id},
-                    data={"status": "FAILED"}
+                    data={"status": OrderStatus.FAILED}
                 )
                 logger.error(f"Payout failed for order {order_id}: {result.error}")
         finally:
@@ -88,7 +89,7 @@ async def process_payout_async(
         await update_balance(db, user_id, total_idr)
         await db.cryptoorder.update(
             where={"id": order_id},
-            data={"status": "FAILED"}
+            data={"status": OrderStatus.FAILED}
         )
 
 

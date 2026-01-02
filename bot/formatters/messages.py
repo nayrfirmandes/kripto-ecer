@@ -63,7 +63,7 @@ class Emoji:
     HELP = "❓"
 
 
-def format_currency(amount: Decimal, symbol: str = "IDR") -> str:
+def format_currency(amount: Decimal | int, symbol: str = "IDR") -> str:
     if symbol == "IDR":
         return f"Rp {amount:,.0f}"
     return f"{amount:,.8f}".rstrip('0').rstrip('.') + f" {symbol}"

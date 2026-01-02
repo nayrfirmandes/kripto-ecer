@@ -1,8 +1,9 @@
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, Any, cast
 from datetime import datetime
 from prisma import Prisma, Json
 from prisma.models import User, Balance, Transaction, Deposit, Withdrawal, CryptoOrder, CoinSetting, PaymentMethod, ReferralSetting
+from prisma.enums import TransactionStatus, TransactionType, UserStatus, OrderStatus, OrderType
 
 
 async def get_user_by_telegram_id(db: Prisma, telegram_id: int) -> Optional[User]:
@@ -37,7 +38,7 @@ async def create_user(
             "longitude": longitude,
             "referralCode": referral_code,
             "referredById": referred_by_id,
-            "status": "ACTIVE",
+            "status": UserStatus.ACTIVE,
         }
     )
     
@@ -48,10 +49,13 @@ async def create_user(
         }
     )
     
-    return await db.user.find_unique(
+    result = await db.user.find_unique(
         where={"id": user.id},
         include={"balance": True}
     )
+    if result is None:
+        raise ValueError("Failed to create user")
+    return result
 
 
 async def get_user_balance(db: Prisma, user_id: str) -> Decimal:
@@ -62,16 +66,17 @@ async def get_user_balance(db: Prisma, user_id: str) -> Decimal:
 async def update_balance(db: Prisma, user_id: str, amount: Decimal) -> Balance:
     result = await db.balance.update(
         where={"userId": user_id},
-        data={"amount": {"increment": amount}}
+        data=cast(Any, {"amount": {"increment": float(amount)}})
     )
     
-    # Invalidate balance cache after update for real-time consistency
     try:
         from bot.services.cache import cache_service
         cache_service.invalidate_balance(user_id)
     except ImportError:
         pass
     
+    if result is None:
+        raise ValueError("Balance not found")
     return result
 
 
@@ -98,16 +103,16 @@ async def create_deposit(
             "userId": user_id,
             "amount": amount,
             "paymentMethod": payment_method,
-            "status": "PENDING",
+            "status": TransactionStatus.PENDING,
         }
     )
     
     await db.transaction.create(
         data={
             "user": {"connect": {"id": user_id}},
-            "type": "TOPUP",
+            "type": TransactionType.TOPUP,
             "amount": amount,
-            "status": "PENDING",
+            "status": TransactionStatus.PENDING,
             "description": f"Deposit via {payment_method}",
             "metadata": Json({"depositId": deposit.id}),
         }
@@ -135,16 +140,16 @@ async def create_withdrawal(
             "accountName": account_name,
             "ewalletType": ewallet_type,
             "ewalletNumber": ewallet_number,
-            "status": "PENDING",
+            "status": TransactionStatus.PENDING,
         }
     )
     
     await db.transaction.create(
         data={
             "user": {"connect": {"id": user_id}},
-            "type": "WITHDRAW",
+            "type": TransactionType.WITHDRAW,
             "amount": amount,
-            "status": "PENDING",
+            "status": TransactionStatus.PENDING,
             "description": f"Withdraw to {bank_name or ewallet_type}",
             "metadata": Json({"withdrawalId": withdrawal.id}),
         }
@@ -156,7 +161,7 @@ async def create_withdrawal(
 async def create_crypto_order(
     db: Prisma,
     user_id: str,
-    order_type: str,
+    order_type: OrderType,
     coin_symbol: str,
     network: str,
     crypto_amount: Decimal,
@@ -183,7 +188,7 @@ async def create_crypto_order(
             "networkFee": network_fee,
             "walletAddress": wallet_address,
             "depositAddress": deposit_address,
-            "status": "PENDING",
+            "status": OrderStatus.PENDING,
             "expiresAt": expires_at,
             "oxapayPaymentId": oxapay_payment_id,
             "oxapayPayoutId": oxapay_payout_id,
@@ -214,14 +219,14 @@ async def get_user_transactions(
     user_id: str,
     limit: int = 10,
     offset: int = 0,
-    tx_type: Optional[str] = None,
+    tx_type: Optional[TransactionType] = None,
 ) -> list[Transaction]:
-    where = {"userId": user_id}
+    where: dict[str, Any] = {"userId": user_id}
     if tx_type:
         where["type"] = tx_type
     
     return await db.transaction.find_many(
-        where=where,
+        where=cast(Any, where),
         order={"createdAt": "desc"},
         take=limit,
         skip=offset,
@@ -231,13 +236,13 @@ async def get_user_transactions(
 async def count_user_transactions(
     db: Prisma,
     user_id: str,
-    tx_type: Optional[str] = None,
+    tx_type: Optional[TransactionType] = None,
 ) -> int:
-    where = {"userId": user_id}
+    where: dict[str, Any] = {"userId": user_id}
     if tx_type:
         where["type"] = tx_type
     
-    return await db.transaction.count(where=where)
+    return await db.transaction.count(where=cast(Any, where))
 
 
 async def get_referral_count(db: Prisma, user_id: str) -> int:
@@ -248,12 +253,12 @@ async def get_referral_bonus_earned(db: Prisma, user_id: str) -> Decimal:
     transactions = await db.transaction.find_many(
         where={
             "userId": user_id,
-            "type": "REFERRAL_BONUS",
-            "status": "COMPLETED",
+            "type": TransactionType.REFERRAL_BONUS,
+            "status": TransactionStatus.COMPLETED,
         }
     )
     
-    return sum(tx.amount for tx in transactions)
+    return sum(tx.amount for tx in transactions) or Decimal("0")
 
 
 async def process_referral_bonus(
@@ -268,9 +273,9 @@ async def process_referral_bonus(
         await db.transaction.create(
             data={
                 "userId": referrer_id,
-                "type": "REFERRAL_BONUS",
+                "type": TransactionType.REFERRAL_BONUS,
                 "amount": referrer_bonus,
-                "status": "COMPLETED",
+                "status": TransactionStatus.COMPLETED,
                 "description": "Bonus referral",
             }
         )
@@ -280,9 +285,9 @@ async def process_referral_bonus(
         await db.transaction.create(
             data={
                 "userId": referee_id,
-                "type": "REFERRAL_BONUS",
+                "type": TransactionType.REFERRAL_BONUS,
                 "amount": referee_bonus,
-                "status": "COMPLETED",
+                "status": TransactionStatus.COMPLETED,
                 "description": "Bonus pendaftaran",
             }
         )

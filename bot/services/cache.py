@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict
+from typing import Optional, Any
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from cachetools import TTLCache
@@ -8,48 +8,37 @@ import asyncio
 class CacheService:
     """High-performance caching service for reducing DB queries"""
     
-    def __init__(self):
-        # Balance cache: fastest path (TTL: 5 seconds for real-time feel)
-        self._balance_cache: TTLCache = TTLCache(maxsize=5000, ttl=5)
-        
-        # Coin settings cache: shorter TTL for faster sync with admin changes (TTL: 10 seconds)
-        self._coin_settings_cache: TTLCache = TTLCache(maxsize=100, ttl=10)
-        
-        # User settings cache: stable data (TTL: 30 seconds)
-        self._settings_cache: TTLCache = TTLCache(maxsize=1000, ttl=30)
-        
-        # Referral count cache: fast but updates less frequently (TTL: 15 seconds)
-        self._referral_cache: TTLCache = TTLCache(maxsize=2000, ttl=15)
-        
-        # OxaPay coins cache: avoid expensive API calls (TTL: 10 seconds)
-        self._coins_cache: TTLCache = TTLCache(maxsize=1, ttl=10)
-        
-        # Generic cache for custom keys with manual expiry
-        self._generic_cache: Dict[str, Any] = {}
+    def __init__(self) -> None:
+        self._balance_cache: TTLCache[str, Any] = TTLCache(maxsize=5000, ttl=5)
+        self._coin_settings_cache: TTLCache[str, Any] = TTLCache(maxsize=100, ttl=10)
+        self._settings_cache: TTLCache[str, Any] = TTLCache(maxsize=1000, ttl=30)
+        self._referral_cache: TTLCache[str, int] = TTLCache(maxsize=2000, ttl=15)
+        self._coins_cache: TTLCache[str, list[Any]] = TTLCache(maxsize=1, ttl=10)
+        self._generic_cache: dict[str, Any] = {}
     
-    def get_balance(self, user_id: str) -> Optional[Dict[str, Any]]:
+    def get_balance(self, user_id: str) -> Any:
         """Get cached balance - O(1) operation"""
         return self._balance_cache.get(user_id)
     
-    def set_balance(self, user_id: str, balance: Dict[str, Any]):
+    def set_balance(self, user_id: str, balance: Any) -> None:
         """Cache balance data"""
         self._balance_cache[user_id] = balance
     
-    def invalidate_balance(self, user_id: str):
+    def invalidate_balance(self, user_id: str) -> None:
         """Invalidate balance cache when balance changes"""
         self._balance_cache.pop(user_id, None)
     
-    def get_coin_settings(self, coin: str, network: str) -> Optional[Dict[str, Any]]:
+    def get_coin_settings(self, coin: str, network: str) -> Any:
         """Get cached coin settings - O(1) operation"""
         key = f"{coin}:{network}"
         return self._coin_settings_cache.get(key)
     
-    def set_coin_settings(self, coin: str, network: str, settings: Dict[str, Any]):
+    def set_coin_settings(self, coin: str, network: str, settings: Any) -> None:
         """Cache coin settings"""
         key = f"{coin}:{network}"
         self._coin_settings_cache[key] = settings
     
-    def invalidate_coin_settings(self, coin: str = None, network: str = None):
+    def invalidate_coin_settings(self, coin: Optional[str] = None, network: Optional[str] = None) -> None:
         """Invalidate coin settings cache"""
         if coin and network:
             key = f"{coin}:{network}"
@@ -65,7 +54,7 @@ class CacheService:
         """Cache system settings"""
         self._settings_cache[settings_key] = value
     
-    def invalidate_settings(self, settings_key: str = None):
+    def invalidate_settings(self, settings_key: Optional[str] = None) -> None:
         """Invalidate settings cache"""
         if settings_key:
             self._settings_cache.pop(settings_key, None)

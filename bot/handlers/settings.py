@@ -1,13 +1,16 @@
 import hashlib
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, InlineKeyboardButton
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from prisma import Prisma
-from typing import Optional
+from prisma.models import User
+from typing import Optional, Any
 
 from bot.formatters.messages import Emoji
-from bot.keyboards.inline import CallbackData, get_settings_keyboard, get_back_keyboard, get_cancel_keyboard
+from bot.keyboards.inline import CallbackData, get_settings_keyboard, get_cancel_keyboard
+from bot.utils.telegram_helpers import safe_edit_text
 
 router = Router()
 
@@ -23,12 +26,30 @@ def hash_pin(pin: str) -> str:
     return hashlib.sha256(pin.encode()).hexdigest()
 
 
-def verify_pin(pin: str, pin_hash: str) -> bool:
+def verify_pin(pin: str, pin_hash: Optional[str]) -> bool:
+    if pin_hash is None:
+        return False
     return hash_pin(pin) == pin_hash
 
 
+def get_settings_back_keyboard():
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(text="← Kembali ke Pengaturan", callback_data=CallbackData.MENU_SETTINGS),
+    )
+    builder.row(
+        InlineKeyboardButton(text="← Menu Utama", callback_data=CallbackData.BACK_MENU),
+    )
+    return builder.as_markup()
+
+
 @router.callback_query(F.data == CallbackData.MENU_SETTINGS)
-async def show_settings(callback: CallbackQuery, db: Prisma, user: Optional[dict] = None, **kwargs):
+async def show_settings(
+    callback: CallbackQuery,
+    db: Prisma,
+    user: Optional[User] = None,
+    **kwargs: Any
+) -> None:
     if not user:
         await callback.answer("Silakan daftar terlebih dahulu.", show_alert=True)
         return
@@ -47,74 +68,94 @@ async def show_settings(callback: CallbackQuery, db: Prisma, user: Optional[dict
 PIN digunakan untuk mengamankan transaksi Anda.
 Pastikan PIN tidak diketahui orang lain."""
     
-    await callback.message.edit_text(
+    await safe_edit_text(
+        callback,
         settings_text,
-        reply_markup=get_settings_keyboard(has_pin),
-        parse_mode="HTML"
+        reply_markup=get_settings_keyboard(has_pin)
     )
     await callback.answer()
 
 
 @router.callback_query(F.data == CallbackData.SETTINGS_SET_PIN)
-async def start_set_pin(callback: CallbackQuery, state: FSMContext, **kwargs):
+async def start_set_pin(
+    callback: CallbackQuery,
+    state: FSMContext,
+    **kwargs: Any
+) -> None:
     await state.set_state(PinStates.waiting_new_pin)
     
-    await callback.message.edit_text(
+    await safe_edit_text(
+        callback,
         f"""{Emoji.LOCK} <b>Atur PIN Transaksi</b>
 
 Masukkan PIN 6 digit untuk mengamankan transaksi.
 
 <i>PIN harus berupa 6 angka.</i>""",
-        reply_markup=get_cancel_keyboard(),
-        parse_mode="HTML"
+        reply_markup=get_cancel_keyboard()
     )
     await callback.answer()
 
 
 @router.callback_query(F.data == CallbackData.SETTINGS_CHANGE_PIN)
-async def start_change_pin(callback: CallbackQuery, state: FSMContext, **kwargs):
+async def start_change_pin(
+    callback: CallbackQuery,
+    state: FSMContext,
+    **kwargs: Any
+) -> None:
     await state.set_state(PinStates.waiting_current_pin)
     await state.update_data(action="change")
     
-    await callback.message.edit_text(
+    await safe_edit_text(
+        callback,
         f"""{Emoji.LOCK} <b>Ubah PIN Transaksi</b>
 
 Masukkan PIN lama Anda untuk verifikasi.
 
 <i>Masukkan 6 digit PIN lama.</i>""",
-        reply_markup=get_cancel_keyboard(),
-        parse_mode="HTML"
+        reply_markup=get_cancel_keyboard()
     )
     await callback.answer()
 
 
 @router.callback_query(F.data == CallbackData.SETTINGS_DELETE_PIN)
-async def confirm_delete_pin(callback: CallbackQuery, state: FSMContext, **kwargs):
-    """Ask for PIN confirmation before deleting"""
+async def confirm_delete_pin(
+    callback: CallbackQuery,
+    state: FSMContext,
+    **kwargs: Any
+) -> None:
     await state.set_state(PinStates.waiting_current_pin)
     await state.update_data(action="delete")
     
-    await callback.message.edit_text(
+    await safe_edit_text(
+        callback,
         f"""{Emoji.LOCK} <b>Hapus PIN Transaksi</b>
 
 Masukkan PIN Anda untuk verifikasi sebelum dihapus.
 
 <i>Masukkan 6 digit PIN.</i>""",
-        reply_markup=get_cancel_keyboard(),
-        parse_mode="HTML"
+        reply_markup=get_cancel_keyboard()
     )
     await callback.answer()
 
 
 @router.message(PinStates.waiting_current_pin)
-async def process_current_pin(message: Message, state: FSMContext, db: Prisma, user: Optional[dict] = None, **kwargs):
-    await message.delete()
+async def process_current_pin(
+    message: Message,
+    state: FSMContext,
+    db: Prisma,
+    user: Optional[User] = None,
+    **kwargs: Any
+) -> None:
+    try:
+        await message.delete()
+    except Exception:
+        pass
     
     if not user:
         await state.clear()
         return
     
-    pin = message.text.strip()
+    pin = (message.text or "").strip()
     
     if not pin.isdigit() or len(pin) != 6:
         await message.answer(
@@ -130,12 +171,10 @@ async def process_current_pin(message: Message, state: FSMContext, db: Prisma, u
         )
         return
     
-    # Check what action user wants to do
-    data = await state.get_data()
-    action = data.get("action", "change")
+    state_data = await state.get_data()
+    action = state_data.get("action", "change")
     
     if action == "delete":
-        # Directly delete PIN
         await db.user.update(
             where={"id": user.id},
             data={"pinHash": None}
@@ -152,7 +191,6 @@ Anda dapat mengatur PIN baru kapan saja di menu pengaturan.""",
             parse_mode="HTML"
         )
     else:
-        # Change PIN flow
         await state.set_state(PinStates.waiting_new_pin)
         await message.answer(
             f"""{Emoji.CHECK} PIN lama berhasil diverifikasi.
@@ -164,10 +202,17 @@ Sekarang masukkan PIN baru Anda.
 
 
 @router.message(PinStates.waiting_new_pin)
-async def process_new_pin(message: Message, state: FSMContext, **kwargs):
-    await message.delete()
+async def process_new_pin(
+    message: Message,
+    state: FSMContext,
+    **kwargs: Any
+) -> None:
+    try:
+        await message.delete()
+    except Exception:
+        pass
     
-    pin = message.text.strip()
+    pin = (message.text or "").strip()
     
     if not pin.isdigit() or len(pin) != 6:
         await message.answer(
@@ -188,16 +233,25 @@ Masukkan ulang PIN yang sama untuk konfirmasi.""",
 
 
 @router.message(PinStates.waiting_confirm_pin)
-async def process_confirm_pin(message: Message, state: FSMContext, db: Prisma, user: Optional[dict] = None, **kwargs):
-    await message.delete()
+async def process_confirm_pin(
+    message: Message,
+    state: FSMContext,
+    db: Prisma,
+    user: Optional[User] = None,
+    **kwargs: Any
+) -> None:
+    try:
+        await message.delete()
+    except Exception:
+        pass
     
     if not user:
         await state.clear()
         return
     
-    data = await state.get_data()
-    new_pin = data.get("new_pin")
-    confirm_pin = message.text.strip()
+    state_data = await state.get_data()
+    new_pin = state_data.get("new_pin", "")
+    confirm_pin = (message.text or "").strip()
     
     if confirm_pin != new_pin:
         await message.answer(
@@ -222,17 +276,3 @@ Jangan bagikan PIN kepada siapapun.""",
         reply_markup=get_settings_back_keyboard(),
         parse_mode="HTML"
     )
-
-
-def get_settings_back_keyboard():
-    from aiogram.types import InlineKeyboardButton
-    from aiogram.utils.keyboard import InlineKeyboardBuilder
-    
-    builder = InlineKeyboardBuilder()
-    builder.row(
-        InlineKeyboardButton(text="← Kembali ke Pengaturan", callback_data=CallbackData.MENU_SETTINGS),
-    )
-    builder.row(
-        InlineKeyboardButton(text="← Menu Utama", callback_data=CallbackData.BACK_MENU),
-    )
-    return builder.as_markup()

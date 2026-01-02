@@ -2,7 +2,8 @@ import logging
 import json
 from decimal import Decimal
 from aiohttp import web
-from prisma import Prisma
+from prisma import Prisma, Json
+from prisma.enums import OrderStatus, TransactionStatus, TransactionType
 
 from bot.services.oxapay import OxaPayService
 from bot.db.queries import update_balance
@@ -47,7 +48,7 @@ async def handle_oxapay_webhook(request: web.Request) -> web.Response:
             if order and status == "Paid":
                 await db.cryptoorder.update(
                     where={"id": order.id},
-                    data={"status": "COMPLETED"}
+                    data={"status": OrderStatus.COMPLETED}
                 )
                 
                 await update_balance(db, order.userId, order.fiatAmount)
@@ -55,11 +56,11 @@ async def handle_oxapay_webhook(request: web.Request) -> web.Response:
                 await db.transaction.create(
                     data={
                         "userId": order.userId,
-                        "type": "SELL",
+                        "type": TransactionType.SELL,
                         "amount": order.fiatAmount,
-                        "status": "COMPLETED",
+                        "status": TransactionStatus.COMPLETED,
                         "description": f"Jual {order.cryptoAmount} {order.coinSymbol}",
-                        "metadata": {"orderId": order.id},
+                        "metadata": Json({"orderId": order.id}),
                     }
                 )
                 

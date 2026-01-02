@@ -1,8 +1,9 @@
-from typing import Any, Awaitable, Callable, Dict
+from typing import Any, Awaitable, Callable, Dict, Optional
 from datetime import datetime, timedelta, timezone
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message, CallbackQuery
 from prisma import Prisma
+from prisma.enums import UserStatus
 from cachetools import TTLCache
 
 
@@ -21,9 +22,9 @@ class UserStatusMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: Dict[str, Any],
     ) -> Any:
-        db: Prisma = data.get("db")
+        db: Optional[Prisma] = data.get("db")
         
-        if not db:
+        if db is None:
             return await handler(event, data)
         
         user_id = None
@@ -53,7 +54,7 @@ class UserStatusMiddleware(BaseMiddleware):
                         )
                     except:
                         pass
-                schedule_background_task(update_activity_background())
+                await schedule_background_task(update_activity_background())
             return await handler(event, data)
         
         # Cache miss - fetch from DB (only status + balance, required for real-time)
@@ -70,17 +71,17 @@ class UserStatusMiddleware(BaseMiddleware):
                 last_active = last_active.replace(tzinfo=timezone.utc)
             
             # Mark inactive in background if needed
-            if last_active < inactive_threshold and user.status == "ACTIVE":
+            if last_active < inactive_threshold and user.status == UserStatus.ACTIVE:
                 from bot.tasks.background_tasks import schedule_background_task
                 async def mark_inactive_background():
                     try:
                         await db.user.update(
                             where={"telegramId": user_id},
-                            data={"status": "INACTIVE"}
+                            data={"status": UserStatus.INACTIVE}
                         )
                     except:
                         pass
-                schedule_background_task(mark_inactive_background())
+                await schedule_background_task(mark_inactive_background())
             
             self._last_activity_cache[user_id] = now
             self._user_cache[user_id] = user

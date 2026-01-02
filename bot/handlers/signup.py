@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, ContentType
+from aiogram.types import Message, CallbackQuery, ContentType, Message as AiogramMessage
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from prisma import Prisma
@@ -61,15 +61,19 @@ async def agree_terms(callback: CallbackQuery, state: FSMContext, db: Prisma, **
     
     await state.set_state(SignupStates.waiting_email)
     
-    await callback.message.edit_text(
-        format_signup_email(),
-        parse_mode="HTML"
-    )
+    msg = callback.message
+    if isinstance(msg, AiogramMessage):
+        await msg.edit_text(
+            format_signup_email(),
+            parse_mode="HTML"
+        )
     await callback.answer()
 
 
 @router.message(SignupStates.waiting_email)
 async def process_email(message: Message, state: FSMContext, db: Prisma, **kwargs):
+    if message.text is None:
+        return
     email = message.text.strip().lower()
     
     if not validate_email(email):
@@ -99,6 +103,8 @@ async def process_email(message: Message, state: FSMContext, db: Prisma, **kwarg
 
 @router.message(SignupStates.waiting_whatsapp, F.content_type == ContentType.CONTACT)
 async def process_whatsapp_contact(message: Message, state: FSMContext, db: Prisma, **kwargs):
+    if message.contact is None:
+        return
     contact = message.contact
     phone = contact.phone_number
     
@@ -158,6 +164,8 @@ async def process_whatsapp(message: Message, state: FSMContext, db: Prisma, **kw
 
 @router.message(SignupStates.waiting_location, F.content_type == ContentType.LOCATION)
 async def process_location(message: Message, state: FSMContext, **kwargs):
+    if message.location is None:
+        return
     location = message.location
     
     await state.update_data(
@@ -189,6 +197,8 @@ async def process_location_text(message: Message, **kwargs):
 
 @router.message(SignupStates.waiting_referral)
 async def process_referral(message: Message, state: FSMContext, db: Prisma, **kwargs):
+    if message.text is None:
+        return
     referral_code = message.text.strip().upper()
     
     referrer = await get_user_by_referral_code(db, referral_code)
@@ -211,6 +221,8 @@ async def skip_referral(callback: CallbackQuery, state: FSMContext, db: Prisma, 
 
 
 async def complete_signup(message: Message, state: FSMContext, db: Prisma):
+    if message.from_user is None:
+        return
     data = await state.get_data()
     
     referral_code = generate_referral_code()
@@ -293,17 +305,20 @@ async def complete_signup_callback(callback: CallbackQuery, state: FSMContext, d
     
     await state.clear()
     
-    await callback.message.edit_text(
-        format_signup_success(referral_code),
-        parse_mode="HTML"
-    )
+    msg = callback.message
+    if isinstance(msg, AiogramMessage):
+        await msg.edit_text(
+            format_signup_success(referral_code),
+            parse_mode="HTML"
+        )
     
     balance = user.balance.amount if user.balance else 0
     name = user.firstName or user.username or "User"
     
-    await callback.message.answer(
-        format_main_menu(balance, name, callback.from_user.id),
-        reply_markup=get_main_menu_keyboard(),
-        parse_mode="HTML"
-    )
+    if isinstance(msg, AiogramMessage):
+        await msg.answer(
+            format_main_menu(balance, name, callback.from_user.id),
+            reply_markup=get_main_menu_keyboard(),
+            parse_mode="HTML"
+        )
     await callback.answer()

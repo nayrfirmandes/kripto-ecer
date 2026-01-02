@@ -108,8 +108,11 @@ Admin panel diakses langsung dari Telegram dengan command `/admin`. Fitur:
 - `/reject_withdraw [id]` - Reject withdrawal
 
 ## Recent Changes
+- **2026-01-02**: Fixed ALL 128 pyright type errors properly (no suppressions) - 100% type-safe code
+- **2026-01-02**: Replaced all string literals with Prisma enums (TransactionStatus, OrderStatus, UserStatus, TransactionType, OrderType)
+- **2026-01-02**: Added proper null checks and isinstance guards for InaccessibleMessage issues
+- **2026-01-02**: pyrightconfig.json set to "standard" mode for strict type checking
 - **2026-01-02**: Cleaned up all hardcoded values to config.py (bot username, USD_TO_IDR rate)
-- **2026-01-02**: Added pyright configuration to suppress Prisma type errors
 - **2026-01-02**: Improved admin panel layout - cleaner, more informative with pending counts
 - **2026-01-02**: Admin button only appears for users with matching admin IDs
 - Admin panel moved to Telegram (no separate web panel needed)

@@ -59,10 +59,15 @@ def get_coin_emoji(coin: str) -> str:
 
 
 @router.callback_query(F.data == CallbackData.MENU_STOCK)
-async def show_stock(callback: CallbackQuery, oxapay: OxaPayService, **kwargs):
+async def show_stock(callback: CallbackQuery, oxapay: OxaPayService, **kwargs) -> None:
+    from aiogram.types import Message as AiogramMessage
     await callback.answer()
     
-    await callback.message.edit_text(
+    msg = callback.message
+    if not isinstance(msg, AiogramMessage):
+        return
+    
+    await msg.edit_text(
         f"{Emoji.CLOCK} Mengambil data stock dari wallet...",
         parse_mode="HTML"
     )
@@ -73,13 +78,13 @@ async def show_stock(callback: CallbackQuery, oxapay: OxaPayService, **kwargs):
         
         message = format_stock_message(balances, prices)
         
-        await callback.message.edit_text(
+        await msg.edit_text(
             message,
             reply_markup=get_stock_keyboard(),
             parse_mode="HTML"
         )
     except Exception as e:
-        await callback.message.edit_text(
+        await msg.edit_text(
             f"{Emoji.CROSS} Gagal mengambil data stock.\n\nError: {str(e)}",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
@@ -87,8 +92,13 @@ async def show_stock(callback: CallbackQuery, oxapay: OxaPayService, **kwargs):
 
 
 @router.callback_query(F.data == "stock:refresh")
-async def refresh_stock(callback: CallbackQuery, oxapay: OxaPayService, **kwargs):
+async def refresh_stock(callback: CallbackQuery, oxapay: OxaPayService, **kwargs) -> None:
+    from aiogram.types import Message as AiogramMessage
     await callback.answer("Memperbarui data...")
+    
+    msg = callback.message
+    if not isinstance(msg, AiogramMessage):
+        return
     
     try:
         balances = await oxapay.get_balance()
@@ -96,13 +106,13 @@ async def refresh_stock(callback: CallbackQuery, oxapay: OxaPayService, **kwargs
         
         message = format_stock_message(balances, prices)
         
-        await callback.message.edit_text(
+        await msg.edit_text(
             message,
             reply_markup=get_stock_keyboard(),
             parse_mode="HTML"
         )
     except Exception as e:
-        await callback.message.edit_text(
+        await msg.edit_text(
             f"{Emoji.CROSS} Gagal memperbarui data stock.\n\nError: {str(e)}",
             reply_markup=get_back_keyboard(),
             parse_mode="HTML"
