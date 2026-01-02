@@ -64,3 +64,6 @@ Thumbs.db
 replit.nix
 .breakpoints
 .replit.nix
+replit.md
+pyrightconfig.json
+Procfile

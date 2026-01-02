@@ -1,129 +1,88 @@
 # Crypto Trading Telegram Bot
 
 ## Overview
-Telegram bot untuk jual beli cryptocurrency dengan sistem saldo internal. Bot ini terintegrasi dengan OxaPay untuk transaksi crypto.
 
-## Tech Stack
-- **Bot**: Python 3.11 + Aiogram 3.x
-- **Database**: PostgreSQL (NeonSQL)
-- **ORM**: Prisma
-- **Admin Panel**: Telegram inline keyboard (built-in)
+This is a Telegram bot for cryptocurrency trading, built with Python using the aiogram framework. The bot enables users to buy and sell cryptocurrencies (BTC, ETH, BNB, SOL, USDT, USDC) with Indonesian Rupiah (IDR), manage their balance through top-ups and withdrawals, and participate in a referral program.
 
-## Project Structure
-```
-bot/
-├── main.py              # Entry point
-├── config.py            # Environment config
-├── webhook.py           # OxaPay webhook handler
-├── handlers/            # Telegram handlers
-│   ├── start.py         # /start command
-│   ├── signup.py        # Registration flow
-│   ├── menu.py          # Main menu
-│   ├── balance.py       # Balance view
-│   ├── topup.py         # Top up flow
-│   ├── withdraw.py      # Withdraw flow
-│   ├── buy.py           # Buy crypto flow
-│   ├── sell.py          # Sell crypto flow
-│   ├── history.py       # Transaction history
-│   └── admin.py         # Admin commands
-├── services/            # Business logic
-│   └── oxapay.py        # OxaPay API wrapper
-├── keyboards/           # InlineKeyboard builders
-│   └── inline.py        # All keyboards
-├── formatters/          # Message formatters + emoji
-│   └── messages.py      # All messages
-├── middlewares/         # Aiogram middlewares
-│   ├── throttling.py    # Rate limiting
-│   ├── database.py      # DB injection
-│   ├── user_status.py   # User status check
-│   └── logging.py       # Request logging
-├── db/                  # Database queries
-│   └── queries.py       # All DB operations
-└── utils/               # Helpers
-    └── helpers.py       # Utility functions
+The bot integrates with OxaPay for cryptocurrency payment processing and CryptoBot for stablecoin deposits. It features user authentication, PIN security, transaction history, and an admin panel for managing pending transactions and coin settings.
 
-prisma/
-└── schema.prisma        # Database schema
+## User Preferences
 
-pyrightconfig.json       # Pyright type checking config
-```
+Preferred communication style: Simple, everyday language.
 
-## Environment Variables
-Required secrets:
-- `TELEGRAM_BOT_TOKEN` - Bot token from @BotFather
-- `BOT_DATABASE` - NeonSQL connection string
-- `OXAPAY_MERCHANT_API_KEY` - OxaPay merchant API key
-- `OXAPAY_PAYOUT_API_KEY` - OxaPay payout API key
-- `OXAPAY_WEBHOOK_SECRET` - Webhook verification secret
-- `ADMIN_TELEGRAM_IDS` - Comma-separated admin Telegram IDs
+## System Architecture
 
-Optional config (via environment variables):
-- `BOT_USERNAME` - Bot username without @ (default: kriptoecerbot)
-- `USD_TO_IDR` - USD to IDR exchange rate (default: 16000)
-- `WEBHOOK_HOST` - Webhook host domain
+### Bot Framework
+- **aiogram 3.13** - Modern async Telegram bot framework
+- Uses webhook mode for production deployment (Railway) with fallback support for polling
+- FSM (Finite State Machine) storage uses in-memory storage for conversation state management
 
-## Features
-- User registration with email, WhatsApp, location
-- Referral system with bonus
-- Balance management (top up, withdraw)
-- Buy crypto (BTC, ETH, BNB, SOL, USDT, USDC)
-- Sell crypto with deposit address
-- Transaction history
-- Admin commands for approving transactions
-- Rate limiting (100-300ms response time target)
-- User inactive detection (6 months)
+### Database Layer
+- **Prisma ORM** with PostgreSQL database
+- Schema defined externally (referenced via `BOT_DATABASE` environment variable)
+- Models include: User, Balance, Transaction, Deposit, Withdrawal, CryptoOrder, CoinSetting, PaymentMethod, ReferralSetting
+- Enums: UserStatus, OrderStatus, TransactionStatus, TransactionType, OrderType
 
-## Running the Bot
-```bash
-python run_bot.py
-```
+### Middleware Stack
+1. **LoggingMiddleware** - Request/response logging
+2. **ThrottlingMiddleware** - Rate limiting (0.1s between requests per user)
+3. **DatabaseMiddleware** - Injects Prisma client and OxaPay service
+4. **UserStatusMiddleware** - User authentication and activity tracking with 30s cache
 
-## Database Commands
-```bash
-# Generate Prisma client
-prisma generate
+### Caching Strategy
+- **TTLCache** from cachetools library for in-memory caching
+- Balance cache: 5s TTL, 5000 entries
+- Coin settings cache: 10s TTL
+- User cache: 30s TTL for real-time data
+- API response caching for OxaPay prices and currencies
 
-# Push schema to database
-prisma db push
+### Background Task Processing
+- Heavy operations (payouts, cache warming) processed asynchronously
+- Target response time: 100-200ms per handler
+- Uses asyncio for concurrent API calls via `ParallelAPIService`
 
-# Open Prisma Studio
-prisma studio
-```
+### Handler Organization
+Modular router structure with dedicated handlers for:
+- User onboarding (start, signup)
+- Core features (balance, buy, sell, topup, withdraw)
+- Supporting features (history, settings, referral, stock)
+- Admin operations (pending transactions, coin management, user management)
 
-## Admin Panel (via Telegram)
-Admin panel diakses langsung dari Telegram dengan command `/admin`. Fitur:
-- Dashboard (stats users, pending transactions, volume)
-- Pending Topup (approve/reject dengan 1 klik)
-- Pending Withdraw (approve/reject dengan 1 klik)
-- Coin Settings (enable/disable network per coin)
-- Payment Methods (enable/disable)
-- Users list
+### Configuration
+- Environment-based configuration via python-dotenv
+- Supports multiple deployment environments (Replit, Railway)
+- Config dataclasses for type safety: BotConfig, DatabaseConfig, OxaPayConfig, CryptoBotConfig
 
-### Legacy Commands
-- `/pending_topup` - View pending top ups
-- `/pending_withdraw` - View pending withdrawals
-- `/approve_topup [id]` - Approve top up
-- `/reject_topup [id]` - Reject top up
-- `/approve_withdraw [id]` - Approve withdrawal
-- `/reject_withdraw [id]` - Reject withdrawal
+## External Dependencies
 
-## Recent Changes
-- **2026-01-02**: Fixed ALL 128 pyright type errors properly (no suppressions) - 100% type-safe code
-- **2026-01-02**: Replaced all string literals with Prisma enums (TransactionStatus, OrderStatus, UserStatus, TransactionType, OrderType)
-- **2026-01-02**: Added proper null checks and isinstance guards for InaccessibleMessage issues
-- **2026-01-02**: pyrightconfig.json set to "standard" mode for strict type checking
-- **2026-01-02**: Cleaned up all hardcoded values to config.py (bot username, USD_TO_IDR rate)
-- **2026-01-02**: Improved admin panel layout - cleaner, more informative with pending counts
-- **2026-01-02**: Admin button only appears for users with matching admin IDs
-- Admin panel moved to Telegram (no separate web panel needed)
-- Interactive inline keyboard for admin actions
-- Fixed network names to match OxaPay API exactly (Ethereum, BSC, Tron, etc. instead of ERC20, BEP20, TRC20)
-- Network filtering: database controls which networks are active, OxaPay provides fees
+### Payment Processors
+- **OxaPay API** - Primary cryptocurrency payment gateway
+  - Merchant API for receiving payments
+  - Payout API for sending crypto
+  - Webhook integration for payment status updates
+  - Exchange rate fetching
 
-## Network Names (OxaPay Standard)
-- BTC: Bitcoin
-- ETH: Ethereum, BSC, Base
-- BNB: BSC
-- SOL: Solana
-- USDT: Tron, Ethereum, BSC, Polygon, Solana, The Open Network
-- USDC: Ethereum, BSC, Solana, Base
+- **CryptoBot (Telegram)** - Stablecoin deposits (USDT/USDC)
+  - Invoice creation for deposits
+  - Exchange rate management with configurable margin
+
+### Database
+- **PostgreSQL** via Prisma ORM
+- Connection managed through `DATABASE_URL` or `BOT_DATABASE` environment variable
+- Auto-reconnection handling in DatabaseMiddleware
+
+### Infrastructure
+- **Railway** - Production deployment platform
+- Dockerfile-based builds
+- Webhook endpoint at `/telegram/webhook`
+- OxaPay webhook at `/webhook/oxapay`
+- Health check endpoint available
+
+### Key Environment Variables
+- `TELEGRAM_BOT_TOKEN` - Bot authentication
+- `BOT_DATABASE` / `DATABASE_URL` - PostgreSQL connection
+- `ADMIN_TELEGRAM_IDS` - Comma-separated admin user IDs
+- `OXAPAY_MERCHANT_API_KEY`, `OXAPAY_PAYOUT_API_KEY`, `OXAPAY_WEBHOOK_SECRET`
+- `CRYPTOBOT_API_TOKEN`
+- `WEBHOOK_HOST` / `RAILWAY_PUBLIC_DOMAIN` - Webhook URL configuration
+- `USD_TO_IDR` - Exchange rate for currency conversion
